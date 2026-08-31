@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Perceptra Labs — One perception engine, every spatial interface</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0B0F17;
+    --bg-raise:#0F1420;
+    --panel:#121826;
+    --panel-2:#141C2C;
+    --line:#232B3D;
+    --line-soft:#1A2130;
+    --text:#E9ECF2;
+    --text-muted:#8D96AC;
+    --text-dim:#5C6478;
+    --camera:#6C7BFF;
+    --lidar:#F2A65A;
+    --radar:#4FD1C5;
+    --font-display:'Public Sans', sans-serif;
+    --font-body:'IBM Plex Sans', sans-serif;
+    --font-mono:'IBM Plex Mono', monospace;
+  }
+
+  *{box-sizing:border-box; margin:0; padding:0;}
+
+  html{scroll-behavior:smooth;}
+
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:var(--font-body);
+    font-size:16px;
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  a{color:inherit;}
+
+  img,svg{display:block; max-width:100%;}
+
+  .wrap{
+    max-width:1180px;
+    margin:0 auto;
+    padding:0 32px;
+  }
+
+  :focus-visible{
+    outline:2px solid var(--camera);
+    outline-offset:3px;
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{animation-duration:0.01ms !important; animation-iteration-count:1 !important; transition-duration:0.01ms !important;}
+  }
+
+  /* ---------- NAV ---------- */
+  header{
+    position:sticky;
+    top:0;
+    z-index:50;
+    background:rgba(11,15,23,0.86);
+    backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--line-soft);
+  }
+  nav.wrap{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    height:76px;
+  }
+  .brand{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    font-family:var(--font-display);
+    font-weight:700;
+    font-size:1.05rem;
+    letter-spacing:-0.01em;
+  }
+  .brand svg{width:28px; height:28px;}
+  .navlinks{
+    display:flex;
+    gap:36px;
+    font-size:0.92rem;
+    color:var(--text-muted);
+  }
+  .navlinks a{
+    text-decoration:none;
+    transition:color .15s ease;
+  }
+  .navlinks a:hover{color:var(--text);}
+  .nav-cta{
+    font-size:0.9rem;
+    font-weight:600;
+    padding:9px 18px;
+    border:1px solid var(--line);
+    border-radius:6px;
+    text-decoration:none;
+    transition:border-color .15s ease, background .15s ease;
+  }
+  .nav-cta:hover{border-color:var(--camera); background:rgba(108,123,255,0.08);}
+  .menu-toggle{display:none;}
+
+  @media (max-width:860px){
+    .navlinks{display:none;}
+    .nav-cta{display:none;}
+  }
+
+  /* ---------- HERO ---------- */
+  .hero{
+    padding:88px 0 96px;
+    border-bottom:1px solid var(--line-soft);
+    position:relative;
+    overflow:hidden;
+  }
+  .hero-grid{
+    display:grid;
+    grid-template-columns:1.05fr 1fr;
+    gap:56px;
+    align-items:center;
+  }
+  .kicker{
+    font-family:var(--font-mono);
+    font-size:0.82rem;
+    color:var(--text-dim);
+    margin-bottom:22px;
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+  .kicker .dot{
+    width:6px; height:6px; border-radius:50%;
+    background:var(--radar);
+    box-shadow:0 0 8px var(--radar);
+  }
+  h1{
+    font-family:var(--font-display);
+    font-weight:700;
+    font-size:clamp(2.3rem, 4.4vw, 3.4rem);
+    line-height:1.08;
+    letter-spacing:-0.02em;
+    max-width:11.5ch;
+  }
+  .hero p.lede{
+    margin-top:24px;
+    font-size:1.12rem;
+    color:var(--text-muted);
+    max-width:46ch;
+    line-height:1.65;
+  }
+  .hero-actions{
+    margin-top:36px;
+    display:flex;
+    gap:14px;
+    flex-wrap:wrap;
+  }
+  .btn-primary{
+    background:var(--text);
+    color:var(--bg);
+    font-weight:600;
+    font-size:0.95rem;
+    padding:13px 24px;
+    border-radius:6px;
+    text-decoration:none;
+    display:inline-block;
+    transition:transform .15s ease, box-shadow .15s ease;
+  }
+  .btn-primary:hover{transform:translateY(-1px); box-shadow:0 8px 24px rgba(108,123,255,0.18);}
+  .btn-secondary{
+    border:1px solid var(--line);
+    color:var(--text);
+    font-weight:600;
+    font-size:0.95rem;
+    padding:13px 24px;
+    border-radius:6px;
+    text-decoration:none;
+    display:inline-block;
+    transition:border-color .15s ease;
+  }
+  .btn-secondary:hover{border-color:var(--text-muted);}
+
+  .hero-stats{
+    margin-top:52px;
+    display:flex;
+    gap:44px;
+    flex-wrap:wrap;
+  }
+  .stat-num{
+    font-family:var(--font-display);
+    font-weight:700;
+    font-size:1.7rem;
+    letter-spacing:-0.01em;
+  }
+  .stat-label{
+    font-size:0.85rem;
+    color:var(--text-dim);
+    margin-top:4px;
+  }
+
+  .hero-visual{
+    position:relative;
+  }
+  .hero-visual svg{width:100%; height:auto;}
+
+  @media (max-width:900px){
+    .hero-grid{grid-template-columns:1fr;}
+    .hero-visual{order:-1;}
+  }
+
+  /* ---------- SECTION HEADER ---------- */
+  .section{
+    padding:96px 0;
+    border-bottom:1px solid var(--line-soft);
+  }
+  .section-head{
+    max-width:56ch;
+    margin-bottom:56px;
+  }
+  .section-head h2{
+    font-family:var(--font-display);
+    font-weight:700;
+    font-size:clamp(1.7rem, 2.8vw, 2.15rem);
+    letter-spacing:-0.015em;
+    line-height:1.18;
+  }
+  .section-head p{
+    margin-top:16px;
+    color:var(--text-muted);
+    font-size:1.02rem;
+    max-width:50ch;
+  }
+
+  /* ---------- DOMAINS ---------- */
+  .domains{
+    display:grid;
+    grid-template-columns:1.15fr 0.85fr;
+    gap:1px;
+    background:var(--line-soft);
+    border:1px solid var(--line-soft);
+  }
+  .domain-cell{
+    background:var(--bg-raise);
+    padding:36px;
+  }
+  .domain-cell.tall{grid-row:span 2;}
+  .domain-tag{
+    font-family:var(--font-mono);
+    font-size:0.78rem;
+    color:var(--text-dim);
+  }
+  .domain-cell h3{
+    font-family:var(--font-display);
+    font-size:1.32rem;
+    font-weight:600;
+    margin-top:14px;
+    letter-spacing:-0.01em;
+  }
+  .domain-cell p{
+    margin-top:12px;
+    color:var(--text-muted);
+    font-size:0.96rem;
+    max-width:42ch;
+  }
+  .domain-cell .mark{
+    margin-top:22px;
+  }
+  @media (max-width:760px){
+    .domains{grid-template-columns:1fr;}
+    .domain-cell.tall{grid-row:auto;}
+  }
+
+  /* ---------- PIPELINE ---------- */
+  .pipeline{
+    display:grid;
+    grid-template-columns:repeat(4, 1fr);
+    gap:0;
+    position:relative;
+  }
+  .pipe-step{
+    padding:0 24px 0 0;
+    position:relative;
+  }
+  .pipe-step:not(:last-child)::after{
+    content:'';
+    position:absolute;
+    top:22px;
+    right:0;
+    width:24px;
+    height:1px;
+    background:var(--line);
+  }
+  .pipe-num{
+    font-family:var(--font-mono);
+    font-size:0.85rem;
+    color:var(--text-dim);
+    display:flex;
+    align-items:center;
+    gap:12px;
+  }
+  .pipe-num .ring{
+    width:44px; height:44px;
+    border-radius:50%;
+    border:1px solid var(--line);
+    display:flex; align-items:center; justify-content:center;
+    font-family:var(--font-display);
+    font-weight:600;
+    color:var(--text);
+    flex-shrink:0;
+  }
+  .pipe-step h4{
+    font-family:var(--font-display);
+    font-size:1.08rem;
+    font-weight:600;
+    margin-top:20px;
+  }
+  .pipe-step p{
+    margin-top:10px;
+    font-size:0.92rem;
+    color:var(--text-muted);
+  }
+  @media (max-width:860px){
+    .pipeline{grid-template-columns:1fr; gap:36px;}
+    .pipe-step:not(:last-child)::after{display:none;}
+  }
+
+  /* ---------- PRINCIPLES ---------- */
+  .principles{
+    display:grid;
+    grid-template-columns:1fr 1fr 1fr;
+    gap:48px;
+  }
+  .principle .num{
+    font-family:var(--font-mono);
+    font-size:0.85rem;
+    color:var(--radar);
+  }
+  .principle h4{
+    font-family:var(--font-display);
+    font-size:1.12rem;
+    font-weight:600;
+    margin-top:14px;
+  }
+  .principle p{
+    margin-top:10px;
+    color:var(--text-muted);
+    font-size:0.94rem;
+  }
+  @media (max-width:760px){
+    .principles{grid-template-columns:1fr; gap:36px;}
+  }
+
+  /* ---------- CTA ---------- */
+  .cta-section{
+    padding:100px 0;
+    text-align:left;
+  }
+  .cta-inner{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-end;
+    flex-wrap:wrap;
+    gap:32px;
+    border-top:1px solid var(--line-soft);
+    padding-top:56px;
+  }
+  .cta-inner h2{
+    font-family:var(--font-display);
+    font-weight:700;
+    font-size:clamp(1.8rem, 3.4vw, 2.6rem);
+    letter-spacing:-0.02em;
+    max-width:14ch;
+  }
+  .cta-side{
+    display:flex;
+    flex-direction:column;
+    gap:14px;
+    align-items:flex-start;
+  }
+
+  /* ---------- FOOTER ---------- */
+  footer{
+    padding:40px 0;
+  }
+  .footer-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:16px;
+    font-size:0.85rem;
+    color:var(--text-dim);
+  }
+  .footer-links{
+    display:flex;
+    gap:24px;
+  }
+  .footer-links a{text-decoration:none;}
+  .footer-links a:hover{color:var(--text-muted);}
+</style>
+</head>
+<body>
+
+<header>
+  <nav class="wrap">
+    <div class="brand">
+      <svg viewBox="0 0 28 28" fill="none">
+        <circle cx="14" cy="14" r="12.5" stroke="#6C7BFF" stroke-width="1.4"/>
+        <circle cx="14" cy="14" r="7.5" stroke="#F2A65A" stroke-width="1.4"/>
+        <circle cx="14" cy="14" r="2.4" fill="#4FD1C5"/>
+      </svg>
+      Perceptra Labs
+    </div>
+    <div class="navlinks">
+      <a href="#domains">Domains</a>
+      <a href="#pipeline">Technology</a>
+      <a href="#principles">Approach</a>
+      <a href="#contact">Company</a>
+    </div>
+    <a class="nav-cta" href="#contact">Talk to us</a>
+  </nav>
+</header>
+
+<section class="hero">
+  <div class="wrap hero-grid">
+    <div>
+      <div class="kicker"><span class="dot"></span>PERCEPTION INFRASTRUCTURE FOR SPATIAL SYSTEMS</div>
+      <h1>One perception engine, every spatial interface.</h1>
+      <p class="lede">Perceptra Labs builds the sensor fusion and 3D reconstruction core that powers AR/VR devices, ADAS platforms, and next-generation human-computer interfaces — so teams stop re-solving perception from scratch for every product.</p>
+      <div class="hero-actions">
+        <a class="btn-primary" href="#contact">Request technical briefing</a>
+        <a class="btn-secondary" href="#pipeline">See how it works</a>
+      </div>
+      <div class="hero-stats">
+        <div>
+          <div class="stat-num">4</div>
+          <div class="stat-label">sensor modalities fused in real time</div>
+        </div>
+        <div>
+          <div class="stat-num">&lt;8ms</div>
+          <div class="stat-label">end-to-end fusion latency</div>
+        </div>
+        <div>
+          <div class="stat-num">1</div>
+          <div class="stat-label">core stack across all four domains</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="hero-visual">
+      <svg viewBox="0 0 480 420" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Diagram showing camera, lidar, and radar sensor streams converging into a unified 3D reconstruction">
+        <!-- camera frustum -->
+        <g opacity="0.95">
+          <path d="M20 90 L170 195 L20 210 Z" fill="none" stroke="#6C7BFF" stroke-width="1.3"/>
+          <circle cx="18" cy="150" r="4" fill="#6C7BFF"/>
+          <text x="8" y="60" font-family="IBM Plex Mono" font-size="11" fill="#6C7BFF">CAMERA</text>
+        </g>
+        <!-- lidar fan -->
+        <g opacity="0.95">
+          <path d="M20 250 L170 205 M20 250 L175 220 M20 250 L172 235 M20 250 L165 250 M20 250 L155 265" stroke="#F2A65A" stroke-width="1.1"/>
+          <circle cx="18" cy="250" r="4" fill="#F2A65A"/>
+          <text x="8" y="290" font-family="IBM Plex Mono" font-size="11" fill="#F2A65A">LIDAR</text>
+        </g>
+        <!-- radar arcs -->
+        <g opacity="0.9">
+          <path d="M20 330 Q100 300 175 250" fill="none" stroke="#4FD1C5" stroke-width="1.1"/>
+          <path d="M20 350 Q110 330 178 265" fill="none" stroke="#4FD1C5" stroke-width="1.1"/>
+          <circle cx="18" cy="340" r="4" fill="#4FD1C5"/>
+          <text x="8" y="378" font-family="IBM Plex Mono" font-size="11" fill="#4FD1C5">RADAR</text>
+        </g>
+
+        <!-- fusion node -->
+        <circle cx="200" cy="235" r="7" fill="#E9ECF2"/>
+        <circle cx="200" cy="235" r="16" stroke="#232B3D" stroke-width="1"/>
+
+        <!-- output: reconstructed point-cloud grid -->
+        <g stroke="#2A3247" stroke-width="1">
+          <path d="M240 235 L280 175"/>
+          <path d="M240 235 L280 295"/>
+          <path d="M240 235 L460 235" stroke-dasharray="2 4"/>
+        </g>
+
+        <g>
+          <!-- point cloud dots forming a loose cube/mesh -->
+          <g fill="#6C7BFF">
+            <circle cx="300" cy="130" r="2.4"/>
+            <circle cx="340" cy="120" r="2.4"/>
+            <circle cx="380" cy="128" r="2.4"/>
+            <circle cx="300" cy="165" r="2.4"/>
+            <circle cx="345" cy="158" r="2.4"/>
+          </g>
+          <g fill="#F2A65A">
+            <circle cx="420" cy="140" r="2.4"/>
+            <circle cx="300" cy="200" r="2.4"/>
+            <circle cx="380" cy="190" r="2.4"/>
+            <circle cx="440" cy="180" r="2.4"/>
+          </g>
+          <g fill="#4FD1C5">
+            <circle cx="330" cy="250" r="2.4"/>
+            <circle cx="390" cy="260" r="2.4"/>
+            <circle cx="300" cy="290" r="2.4"/>
+            <circle cx="440" cy="270" r="2.4"/>
+            <circle cx="360" cy="320" r="2.4"/>
+            <circle cx="410" cy="330" r="2.4"/>
+          </g>
+          <g stroke="#3A4258" stroke-width="0.7" fill="none">
+            <path d="M300 130 L340 120 L380 128 M300 130 L300 165 L345 158 L340 120 M420 140 L380 128 M300 200 L300 165 M380 190 L345 158 M380 190 L420 140 M440 180 L420 140 M330 250 L300 200 M390 260 L380 190 M300 290 L330 250 M440 270 L440 180 M360 320 L330 250 M410 330 L390 260 M410 330 L360 320"/>
+          </g>
+        </g>
+
+        <text x="300" y="365" font-family="IBM Plex Mono" font-size="11" fill="#8D96AC">UNIFIED 3D RECONSTRUCTION</text>
+      </svg>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="domains">
+  <div class="wrap">
+    <div class="section-head">
+      <h2>Four products. One perception problem underneath.</h2>
+      <p>AR headsets, driver-assist systems, gesture interfaces, and mapping tools all need the same thing first: an accurate, low-latency model of the 3D world built from noisy, mismatched sensors.</p>
+    </div>
+
+    <div class="domains">
+      <div class="domain-cell tall">
+        <div class="domain-tag">01 · CORE</div>
+        <h3>3D reconstruction &amp; sensor fusion</h3>
+        <p>The shared engine underneath everything Perceptra ships: camera, lidar, radar, and inertial data are aligned, fused, and turned into a live 3D mesh with tracked uncertainty — not just a point cloud.</p>
+        <div class="mark">
+          <svg width="120" height="40" viewBox="0 0 120 40">
+            <circle cx="10" cy="20" r="3" fill="#6C7BFF"/>
+            <circle cx="10" cy="10" r="3" fill="#F2A65A"/>
+            <circle cx="10" cy="30" r="3" fill="#4FD1C5"/>
+            <path d="M13 20 L55 20 M13 10 L55 20 M13 30 L55 20" stroke="#3A4258" stroke-width="1"/>
+            <circle cx="58" cy="20" r="4" fill="#E9ECF2"/>
+            <path d="M63 20 L110 20" stroke="#3A4258" stroke-width="1" stroke-dasharray="2 3"/>
+          </svg>
+        </div>
+      </div>
+
+      <div class="domain-cell">
+        <div class="domain-tag">02 · AR / VR</div>
+        <h3>Spatial mapping for headsets</h3>
+        <p>Real-time scene reconstruction and occlusion for AR/VR devices, tuned for mobile power and thermal budgets.</p>
+      </div>
+
+      <div class="domain-cell">
+        <div class="domain-tag">03 · ADAS</div>
+        <h3>Perception stack for driver assist</h3>
+        <p>Camera–radar–lidar fusion built for automotive safety cases, with traceable confidence at every layer.</p>
+      </div>
+
+      <div class="domain-cell">
+        <div class="domain-tag">04 · HCI</div>
+        <h3>Gesture &amp; presence sensing</h3>
+        <p>Hand, gaze, and body tracking that turns raw sensor fusion output into interface-ready input events.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="pipeline">
+  <div class="wrap">
+    <div class="section-head">
+      <h2>How a scene becomes an interface</h2>
+      <p>The same four-stage pipeline runs under every product, from a car's windshield sensors to a headset's cameras.</p>
+    </div>
+
+    <div class="pipeline">
+      <div class="pipe-step">
+        <div class="pipe-num"><span class="ring">1</span></div>
+        <h4>Capture</h4>
+        <p>Camera, lidar, radar, and IMU streams are timestamped and calibrated against a shared reference frame.</p>
+      </div>
+      <div class="pipe-step">
+        <div class="pipe-num"><span class="ring">2</span></div>
+        <h4>Fuse</h4>
+        <p>Modalities are aligned in real time, weighting each sensor by its confidence under current conditions.</p>
+      </div>
+      <div class="pipe-step">
+        <div class="pipe-num"><span class="ring">3</span></div>
+        <h4>Reconstruct</h4>
+        <p>A live 3D mesh of the environment is built and continuously refined as new data arrives.</p>
+      </div>
+      <div class="pipe-step">
+        <div class="pipe-num"><span class="ring">4</span></div>
+        <h4>Interface</h4>
+        <p>The model is exposed as tracked objects, surfaces, and gestures your application can act on directly.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="principles">
+  <div class="wrap">
+    <div class="section-head">
+      <h2>What we optimize for</h2>
+    </div>
+
+    <div class="principles">
+      <div class="principle">
+        <div class="num">A</div>
+        <h4>Latency over polish</h4>
+        <p>A perception system is only useful if it keeps up with the world. We tune for milliseconds before we tune for accuracy on a benchmark.</p>
+      </div>
+      <div class="principle">
+        <div class="num">B</div>
+        <h4>Confidence, not just output</h4>
+        <p>Every fused estimate carries an uncertainty value, so downstream systems know when to trust the model and when to fall back.</p>
+      </div>
+      <div class="principle">
+        <div class="num">C</div>
+        <h4>One stack, many sensors</h4>
+        <p>New hardware — a different lidar, a cheaper radar — should mean a config change, not a rewrite.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="cta-section" id="contact">
+  <div class="wrap">
+    <div class="cta-inner">
+      <h2>Bring your sensors. We'll bring the perception.</h2>
+      <div class="cta-side">
+        <a class="btn-primary" href="mailto:hello@perceptralabs.com">hello@perceptralabs.com</a>
+        <a class="btn-secondary" href="#domains">Explore the platform</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap footer-row">
+    <div>© 2026 Perceptra Labs</div>
+    <div class="footer-links">
+      <a href="#domains">Domains</a>
+      <a href="#pipeline">Technology</a>
+      <a href="#contact">Contact</a>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
